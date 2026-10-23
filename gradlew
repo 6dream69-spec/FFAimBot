@@ -1,3 +1,5 @@
-#!/data/data/com.termux/files/usr/bin/sh
-GRADLE_HOME="$PWD/gradle/gradle-7.6.1"
-gradle "$@"
+curl -o gradlew https://raw.githubusercontent.com/gradle/gradle/master/gradlew
+chmod +x gradlew
+git add gradlew
+git commit -m "Replace custom Termux gradlew with standard wrapper"
+git push
