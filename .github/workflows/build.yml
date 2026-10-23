@@ -23,35 +23,22 @@ jobs:
           yes | sdkmanager --licenses || true
           sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" || true
 
-      - name: Ensure Gradle Wrapper and gradlew exist
+      - name: Generate clean Gradle wrapper
         run: |
+          # 1. Purani corrupted / Termux wrapper files delete karo
+          rm -rf gradle/wrapper gradlew gradlew.bat
+
+          # 2. Temp directory me fresh wrapper generate karo (taaki build files interfere na karein)
+          mkdir -p /tmp/wrapper-gen
+          (cd /tmp/wrapper-gen && gradle wrapper --gradle-version 8.5)
+
+          # 3. Genuine Linux wrapper files ko project me copy karo
           mkdir -p gradle/wrapper
+          cp /tmp/wrapper-gen/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/
+          cp /tmp/wrapper-gen/gradle/wrapper/gradle-wrapper.properties gradle/wrapper/
+          cp /tmp/wrapper-gen/gradlew ./gradlew
 
-          # 1. Create properties if missing
-          if [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
-            cat > gradle/wrapper/gradle-wrapper.properties <<'EOF'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOF
-          fi
-
-          # 2. Download wrapper JAR if missing
-          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-            curl -sSL -o gradle/wrapper/gradle-wrapper.jar https://github.com/android/architecture-samples/raw/main/gradle/wrapper/gradle-wrapper.jar
-          fi
-
-          # 3. If gradlew is missing, empty, or not a valid shell script, download official wrapper
-          if [ ! -s gradlew ] || ! grep -q '#!/bin/sh' gradlew 2>/dev/null; then
-            echo "Fetching fresh Unix gradlew script..."
-            curl -sSL -o gradlew https://raw.githubusercontent.com/gradle/gradle/master/gradlew
-          fi
-
-          # 4. Strip UTF-8 BOM, remove CRLF (\r), and set executable permissions
-          sed -i '1s/^\xEF\xBB\xBF//' gradlew
-          sed -i 's/\r$//' gradlew
+          # 4. Linux permissions set karo
           chmod +x gradlew
 
       - name: Build Debug APK
