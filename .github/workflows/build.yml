@@ -25,14 +25,15 @@ jobs:
 
       - name: Generate clean Gradle wrapper
         run: |
-          # 1. Purani corrupted / Termux wrapper files delete karo
+          # 1. Purani corrupted files delete karo
           rm -rf gradle/wrapper gradlew gradlew.bat
 
-          # 2. Temp directory me fresh wrapper generate karo (taaki build files interfere na karein)
+          # 2. Temp directory banao aur blank settings file dalo taaki Gradle allow kare
           mkdir -p /tmp/wrapper-gen
+          touch /tmp/wrapper-gen/settings.gradle
           (cd /tmp/wrapper-gen && gradle wrapper --gradle-version 8.5)
 
-          # 3. Genuine Linux wrapper files ko project me copy karo
+          # 3. Fresh official files ko project me copy karo
           mkdir -p gradle/wrapper
           cp /tmp/wrapper-gen/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/
           cp /tmp/wrapper-gen/gradle/wrapper/gradle-wrapper.properties gradle/wrapper/
